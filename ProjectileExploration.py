@@ -1,58 +1,56 @@
 import math
 import csv
 
-def calculateInitialVelocity(height):
-    # Calculate initial velocity required to reach height h from height x
-    g = -9.81  # gravitational acceleration in m/s^2
-    initialVelocity = math.sqrt(-2 * g * height)
+# Initial parameters
+# Local gravity in m/s^2
+gravity = 9.81
+
+# Launch starting height in m
+initialHeight = 0.26 # Change as needed
+
+# Projectile max height at each power level
+heights = [0.40, 0.76, 1.14, 1.65, 1.84] # Change as needed
+
+def calculateInitialVelocity(maxHeight):
+    initialVelocity = math.sqrt(-2 * -gravity * maxHeight)
+
     return initialVelocity
 
-def calculateDistance(initialVelocity, angle, initialHeight):
-    # Convert the angle to radians
-    angleRadians = math.radians(angle)
+def calculateFlight(initialVelocity, angle, initialHeight):
+    radianAngle = math.radians(angle)
+        
+    xVelocity = initialVelocity * math.cos(radianAngle)
+    yVelocity = initialVelocity * math.sin(radianAngle)
     
-    # Define gravitational acceleration (m/s^2)
-    g = 9.81
+    discriminant = yVelocity ** 2 + 2 * gravity * initialHeight
     
-    # Calculate the horizontal and vertical components of the initial velocity
-    v_x = initialVelocity * math.cos(angleRadians)
-    v_y = initialVelocity * math.sin(angleRadians)
+    flightTime = (yVelocity + math.sqrt(discriminant)) / gravity
     
-    # Calculate the time of flight
-    # Using the quadratic formula to solve for time t when the projectile hits the ground (y = 0)
-    discriminant = v_y**2 + 2 * g * initialHeight
-    if discriminant < 0:
-        return None  # No real solution, meaning the projectile doesn't reach ground level
-    
-    t_flight = (v_y + math.sqrt(discriminant)) / g
-    
-    # Calculate the horizontal distance
-    distance = v_x * t_flight
-    return distance
+    distance = xVelocity * flightTime
 
-def searchForPowerAngleSetting(targetDistance, csvFilePath='power_angle_distance.csv', tolerance=0.05):
-    # Open and read the CSV file
+    return (distance, flightTime)
+
+def searchForAngleAndPowerSettings(targetDistance, shortTolerance = 0.05, longTolerance = 0.1):
+    csvFilePath = "PowerAngleDistance.csv"
+
     with open(csvFilePath, mode='r') as file:
         reader = csv.DictReader(file)
         
-        # Search for the first row where the distance is within the tolerance of the target
+        # Use the first row where the distance matches within tolerance
+        # Lower/less extreme settings should be more precise
         for row in reader:
             distance = float(row["Distance (meters)"])
             
-            if abs(distance - targetDistance) <= tolerance:
-                # Matching row found
+            if (targetDistance - shortTolerance) <= distance <= (targetDistance + longTolerance):
                 powerSetting = row["Power Setting"]
                 angle = row["Angle (degrees)"]
-                print(f"To reach {targetDistance} meters, use power setting {powerSetting} and launch angle {angle} degrees.")
-                return
+
+                return (angle, powerSetting)
         
         # If no match found
         print("No solution found with the available power settings and angles.")
 
-def main():
-    heights = [0.40, 0.76, 1.14, 1.65, 1.84]
-    initialHeight = 0.26  # Starting height of the marble in m
-
+def mainLoop():
     print("Choose an option:")
     print("1. Calculate the distance for a given angle and power setting.")
     print("2. Find the power setting and angle for a specific target distance.")
@@ -60,31 +58,42 @@ def main():
 
     choice = int(input("Enter your choice (1, 2, or 3): "))
 
-    if choice == 1:
-        angle = float(input("Enter the launch angle in degrees (0 = flat): "))
-        powerSetting = int(input("Enter the power setting (1 to 5): "))
+    print()
 
-        # Get the corresponding height for the power setting
+    if choice == 1:
+        angle = float(input("Enter the launch angle in degrees (0 = flat, 90 = up): "))
+        powerSetting = int(input(f"""Enter the power setting (1 to {len(heights)}: """))
+
         if powerSetting < 1 or powerSetting > len(heights):
             print("Invalid power setting.")
             return
 
         height = heights[powerSetting - 1]
         initialVelocity = calculateInitialVelocity(height)
-        distance = calculateDistance(initialVelocity, angle, initialHeight)
-        print(f"The marble travels {distance:.2f} meters.")
+
+        flightProfile = calculateFlight(initialVelocity, angle, initialHeight)
+        flightDistance = round(flightProfile[0], 2)
+        flightTime = round(flightProfile[1], 2)
+
+        print(f"""\nThe projectile travels {flightDistance} meters over {flightTime}s.""")
     
     elif choice == 2:
         targetDistance = float(input("Enter the target distance in meters: "))
-        searchForPowerAngleSetting(targetDistance)
+
+        launchParameters = searchForAngleAndPowerSettings(targetDistance, 0.00, 0.05)
+        launchAngle = launchParameters[0]
+        launchPower = launchParameters[1]
+
+        print(f"To reach {targetDistance} meters, launch at angle {launchAngle} and use power setting {launchPower}.")
+
     
     elif choice == 3:
         print("Goodbye!")
         exit()
     
     else:
-        print("Invalid choice.")
+        print("Invalid choice, please try again.")
 
 while True:
     print("")
-    main()
+    mainLoop()
