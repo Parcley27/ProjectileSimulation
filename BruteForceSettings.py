@@ -15,6 +15,9 @@ heights = [0.40, 0.76, 1.14, 1.65, 1.84] # Change as needed
 minAngle = 0
 maxAngle = 90
 
+# Average real disntance loss in m
+realGains = 0.05
+
 def calculateInitialVelocity(height):
     initialVelocity = math.sqrt(-2 * -gravity * height)
 
@@ -30,7 +33,8 @@ def calculateDistance(initialVelocity, angle, initialHeight):
     
     flightTime = (yVelocity + math.sqrt(discriminant)) / gravity
     
-    distance = xVelocity * flightTime
+    distance = (xVelocity * flightTime) + realGains
+
     return distance
 
 with open("PowerAngleDistance.csv", mode = "w", newline = "") as file:

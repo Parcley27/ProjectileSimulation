@@ -11,6 +11,9 @@ initialHeight = 0.26 # Change as needed
 # Projectile max height at each power level
 heights = [0.40, 0.76, 1.14, 1.65, 1.84] # Change as needed
 
+# Average real disntance loss in m
+realGains = 0.05
+
 def calculateInitialVelocity(maxHeight):
     initialVelocity = math.sqrt(-2 * -gravity * maxHeight)
 
@@ -26,7 +29,7 @@ def calculateFlight(initialVelocity, angle, initialHeight):
     
     flightTime = (yVelocity + math.sqrt(discriminant)) / gravity
     
-    distance = xVelocity * flightTime
+    distance = (xVelocity * flightTime) + realGains
 
     return (distance, flightTime)
 
@@ -84,7 +87,7 @@ def mainLoop():
         launchAngle = launchParameters[0]
         launchPower = launchParameters[1]
 
-        print(f"To reach {targetDistance} meters, launch at angle {launchAngle} and use power setting {launchPower}.")
+        print(f"To reach {targetDistance} meters, launch at {launchAngle} degrees and use power setting {launchPower}.")
 
     
     elif choice == 3:
