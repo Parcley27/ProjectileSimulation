@@ -14,6 +14,9 @@ heights = [0.40, 0.76, 1.14, 1.65, 1.84] # Change as needed
 # Average real disntance loss in m
 realGains = 0.05
 
+# Brute force file name
+bruteForce = "BruteForceSettings.py"
+
 def calculateInitialVelocity(maxHeight):
     initialVelocity = math.sqrt(-2 * -gravity * maxHeight)
 
@@ -96,6 +99,10 @@ def mainLoop():
     
     else:
         print("Invalid choice, please try again.")
+
+with open(bruteForce) as scriptFile:
+    code = scriptFile.read()
+    exec(code)
 
 while True:
     print("")
