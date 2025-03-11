@@ -1,2 +1,2 @@
 # ProjectileSimulation
-Simulation of projectiles in 2d
+Simulation of projectiles using 2D kinematics.
